@@ -59,7 +59,7 @@ impl Drop for GuardedRustPromiseAwaiter {
 //
 // https://docs.rs/cxx/latest/cxx/trait.ExternType.html#integrating-with-bindgen-generated-types
 unsafe impl ExternType for GuardedRustPromiseAwaiter {
-    type Id = cxx::type_id!("workerd::rust::async::GuardedRustPromiseAwaiter");
+    type Id = cxx::type_id!("kj_rs::GuardedRustPromiseAwaiter");
     type Kind = cxx::kind::Opaque;
 }
 
@@ -68,7 +68,7 @@ pub struct PtrGuardedRustPromiseAwaiter(*mut GuardedRustPromiseAwaiter);
 
 // Safety: Raw pointers are the same size in both languages.
 unsafe impl ExternType for PtrGuardedRustPromiseAwaiter {
-    type Id = cxx::type_id!("workerd::rust::async::PtrGuardedRustPromiseAwaiter");
+    type Id = cxx::type_id!("kj_rs::PtrGuardedRustPromiseAwaiter");
     type Kind = cxx::kind::Trivial;
 }
 

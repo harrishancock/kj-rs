@@ -1,8 +1,8 @@
-#include <workerd/rust/async/promise.h>
+#include <kj-rs/promise.h>
 
 #include <kj/debug.h>
 
-namespace workerd::rust::async {
+namespace kj_rs {
 
 // If these static assertions ever fire, we must update the `pub struct OwnPromiseNode` definition
 // in promise.rs to match the new C++ size/layout.
@@ -17,4 +17,4 @@ void own_promise_node_drop_in_place(PtrOwnPromiseNode node) {
   kj::dtor(*node);
 }
 
-}  // namespace workerd::rust::async
+}  // namespace kj_rs

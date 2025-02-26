@@ -35,7 +35,7 @@ impl Drop for OwnPromiseNode {
 //
 // https://docs.rs/cxx/latest/cxx/trait.ExternType.html#integrating-with-bindgen-generated-types
 unsafe impl ExternType for OwnPromiseNode {
-    type Id = cxx::type_id!("workerd::rust::async::OwnPromiseNode");
+    type Id = cxx::type_id!("kj_rs::OwnPromiseNode");
     type Kind = cxx::kind::Trivial;
 }
 
@@ -44,7 +44,7 @@ pub struct PtrOwnPromiseNode(*mut OwnPromiseNode);
 
 // Safety: Raw pointers are the same size in both languages.
 unsafe impl ExternType for PtrOwnPromiseNode {
-    type Id = cxx::type_id!("workerd::rust::async::PtrOwnPromiseNode");
+    type Id = cxx::type_id!("kj_rs::PtrOwnPromiseNode");
     type Kind = cxx::kind::Trivial;
 }
 

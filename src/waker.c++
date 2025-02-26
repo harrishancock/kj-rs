@@ -1,8 +1,8 @@
-#include <workerd/rust/async/waker.h>
+#include <kj-rs/waker.h>
 
 #include <kj/debug.h>
 
-namespace workerd::rust::async {
+namespace kj_rs {
 
 // =======================================================================================
 // ArcWakerPromiseNode
@@ -147,4 +147,4 @@ kj::Maybe<kj::Promise<void>> LazyArcWaker::reset() {
   }
 }
 
-}  // namespace workerd::rust::async
+}  // namespace kj_rs

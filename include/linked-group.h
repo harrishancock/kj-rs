@@ -2,7 +2,7 @@
 
 #include <kj/list.h>
 
-namespace workerd::rust::async {
+namespace kj_rs {
 
 // `LinkedGroup<G, O>` and `LinkedObject<G, O>` are CRTP mixins which allow derived classes G and O
 // to weakly refer to each other in a one-to-many relationship.
@@ -274,4 +274,4 @@ private:
   InnerIterator inner;
 };
 
-}  // namespace workerd::rust::async
+}  // namespace kj_rs

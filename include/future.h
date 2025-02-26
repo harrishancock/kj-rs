@@ -1,10 +1,10 @@
 #pragma once
 
-#include <workerd/rust/async/waker.h>
+#include <kj-rs/waker.h>
 
 #include <array>
 
-namespace workerd::rust::async {
+namespace kj_rs {
 
 template <typename T>
 class BoxFuture;
@@ -116,4 +116,4 @@ private:
   std::array<std::uintptr_t, 2> repr;
 };
 
-}  // namespace workerd::rust::async
+}  // namespace kj_rs

@@ -2,6 +2,7 @@
 name = "kj-rs"
 version = "0.1.0"
 edition = "2021"
+links = "kj-async"
 
 [dependencies]
 cxx = "1.0"
@@ -10,4 +11,4 @@ cxx = "1.0"
 cxx-build = "1.0"
 
 [lib]
-path = "lib.rs"
+path = "src/lib.rs"

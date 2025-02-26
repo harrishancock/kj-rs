@@ -2,7 +2,7 @@
 
 #include <kj/async.h>
 
-namespace workerd::rust::async {
+namespace kj_rs {
 
 // Return true if `executor`'s event loop is active on the current thread.
 bool isCurrent(const kj::Executor& executor);
@@ -53,4 +53,4 @@ private:
   T value;
 };
 
-}  // namespace workerd::rust::async
+}  // namespace kj_rs

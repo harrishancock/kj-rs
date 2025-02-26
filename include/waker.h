@@ -1,6 +1,6 @@
 #pragma once
 
-#include <workerd/rust/async/promise.h>
+#include <kj-rs/promise.h>
 
 #include <kj/async.h>
 #include <kj/mutex.h>
@@ -9,7 +9,7 @@
 
 #include <atomic>
 
-namespace workerd::rust::async {
+namespace kj_rs {
 
 // =======================================================================================
 // KjWaker
@@ -171,4 +171,4 @@ private:
   mutable uint dropCount = 0;
 };
 
-}  // namespace workerd::rust::async
+}  // namespace kj_rs

@@ -1,13 +1,13 @@
 #pragma once
 
-#include <workerd/rust/async/future.h>
-#include <workerd/rust/async/waker.h>
-#include <workerd/rust/async/executor-guarded.h>
-#include <workerd/rust/async/linked-group.h>
+#include <kj-rs/future.h>
+#include <kj-rs/waker.h>
+#include <kj-rs/executor-guarded.h>
+#include <kj-rs/linked-group.h>
 
 #include <kj/debug.h>
 
-namespace workerd::rust::async {
+namespace kj_rs {
 
 // =======================================================================================
 // Opaque Rust types
@@ -314,4 +314,4 @@ LazyBoxFutureAwaiter<T> operator co_await(BoxFuture<T>& future) {
   return kj::mv(future);
 }
 
-}  // namespace workerd::rust::async
+}  // namespace kj_rs

@@ -1,9 +1,9 @@
-#include <workerd/rust/async/awaiter.h>
-#include <workerd/rust/async/lib.rs.h>
+#include <kj-rs/awaiter.h>
+#include <kj-rs/src/lib.rs.h>
 
 #include <kj/debug.h>
 
-namespace workerd::rust::async {
+namespace kj_rs {
 
 // =================================================================================================
 // RustPromiseAwaiter
@@ -59,7 +59,7 @@ bindgen \
     --rust-target 1.83.0 \
     --disable-name-namespacing \
     --generate "types" \
-    --allowlist-type "workerd::rust::async_::GuardedRustPromiseAwaiter" \
+    --allowlist-type "kj_rs_::GuardedRustPromiseAwaiter" \
     --opaque-type ".*" \
     --no-derive-copy \
     ./awaiter.h \
@@ -286,4 +286,4 @@ kj::Maybe<FuturePollEvent&> FuturePollEvent::PollScope::tryGetFuturePollEvent() 
   }
 }
 
-}  // namespace workerd::rust::async
+}  // namespace kj_rs

@@ -3,20 +3,20 @@
 #include <kj/async.h>
 #include <rust/cxx.h>
 
-namespace workerd::rust::async {
+namespace kj_rs {
 
 using OwnPromiseNode = kj::_::OwnPromiseNode;
 using PtrOwnPromiseNode = OwnPromiseNode*;
 
 void own_promise_node_drop_in_place(OwnPromiseNode*);
 
-}  // namespace workerd::rust::async
+}  // namespace kj_rs
 
 namespace rust {
 
 // OwnPromiseNodes happen to follow Rust move semantics.
 template <>
-struct IsRelocatable<::workerd::rust::async::OwnPromiseNode>: std::true_type {};
+struct IsRelocatable<::kj_rs::OwnPromiseNode>: std::true_type {};
 
 // Promises also follow Rust move semantics.
 template <typename T>
