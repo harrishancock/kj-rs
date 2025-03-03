@@ -90,8 +90,8 @@ fn main() {
 
     let local_src_dir = Path::new("src");
     cxx_build::bridge(local_src_dir.join("lib.rs"))
-        .files(SOURCES.into_iter().map(|s| local_src_dir.join(s)))
         .cpp(true)
+        .files(SOURCES.into_iter().map(|s| local_src_dir.join(s)))
         .cpp_set_stdlib("c++")
         .std("c++23")
         .compile("kj-rs");
