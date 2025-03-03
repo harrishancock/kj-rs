@@ -31,12 +31,15 @@ fn main() {
         env::var("LIBKJ_INCLUDE_PATH").expect("LIBKJ_INCLUDE_PATH must be set");
     let libkj_static_path = env::var("LIBKJ_STATIC_PATH").expect("LIBKJ_STATIC_PATH must be set");
 
-    let libkj_include_path: Vec<PathBuf> = libkj_include_path
+    let libkj_include_path: Vec<&Path> = libkj_include_path
         .split(':')
         .map(|p| {
             let p = Path::new(p);
-            p.canonicalize()
-                .expect("LIBKJ_INCLUDE_PATH must be canonicalizable")
+            Box::<Path>::leak(
+                p.canonicalize()
+                    .expect("LIBKJ_INCLUDE_PATH must be canonicalizable")
+                    .into_boxed_path(),
+            ) as &Path
         })
         .collect();
     let libkj_static_path: Vec<&Path> =
