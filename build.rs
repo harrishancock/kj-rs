@@ -35,11 +35,13 @@ fn main() {
         .split(':')
         .map(|p| {
             let p = Path::new(p);
-            Box::<Path>::leak(
+            let p = Box::<Path>::leak(
                 p.canonicalize()
                     .expect("LIBKJ_INCLUDE_PATH must be canonicalizable")
                     .into_boxed_path(),
-            ) as &Path
+            ) as &Path;
+            println!("new path {:?}", p);
+            p
         })
         .collect();
     let libkj_static_path: Vec<&Path> =
