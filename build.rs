@@ -7,6 +7,7 @@ use cxx_build::CFG;
 use std::env;
 use std::fs;
 use std::path::Path;
+use std::path::PathBuf;
 
 const HEADERS: &[&str] = &[
     "awaiter.h",
@@ -30,9 +31,13 @@ fn main() {
         env::var("LIBKJ_INCLUDE_PATH").expect("LIBKJ_INCLUDE_PATH must be set");
     let libkj_static_path = env::var("LIBKJ_STATIC_PATH").expect("LIBKJ_STATIC_PATH must be set");
 
-    let libkj_include_path: Vec<&Path> = libkj_include_path
+    let libkj_include_path: Vec<PathBuf> = libkj_include_path
         .split(':')
-        .map(|p| Path::new(p))
+        .map(|p| {
+            let p = Path::new(p);
+            p.canonicalize()
+                .expect("LIBKJ_INCLUDE_PATH must be canonicalizable")
+        })
         .collect();
     let libkj_static_path: Vec<&Path> =
         libkj_static_path.split(':').map(|p| Path::new(p)).collect();
@@ -70,16 +75,12 @@ fn main() {
         .expect("header should not yet exist");
     }
 
-    if let Some(current) = env::var_os("CARGO_TARGET_DIR") {
-        println!("current CARGO_TARGET_DIR = {:?}", current);
-    }
-
     unsafe {
         env::set_var("CARGO_TARGET_DIR", out_dir);
     }
 
     println!(
-        "new CARGO_TARGET_DIR = {:?}",
+        "set CARGO_TARGET_DIR = {:?}",
         env::var_os("CARGO_TARGET_DIR").expect("we just set it")
     );
 
