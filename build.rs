@@ -61,8 +61,6 @@ fn main() {
     let out_include_kj_rs_dir = out_include_dir.join("kj-rs");
     fs::create_dir_all(&out_include_kj_rs_dir).expect("directory should not yet exist");
 
-    println!("created {}", out_include_kj_rs_dir.display());
-
     let local_include_dir = Path::new("include");
     for header in HEADERS {
         fs::copy(
