@@ -54,11 +54,14 @@ fn main() {
 
     // We export our own headers so that they are available with `#include <kj-rs/foo.h>`.
     let out_dir = env::var("OUT_DIR").expect("cargo guarantees OUT_DIR is set");
-    let out_include_dir = Path::new(&out_dir).join("include");
+    let out_dir = Path::new(&out_dir);
+    let out_include_dir = out_dir.join("include");
     CFG.exported_header_dirs.push(&out_include_dir);
 
     let out_include_kj_rs_dir = out_include_dir.join("kj-rs");
     fs::create_dir_all(&out_include_kj_rs_dir).expect("directory should not yet exist");
+
+    println!("created {}", out_include_kj_rs_dir.display());
 
     let local_include_dir = Path::new("include");
     for header in HEADERS {
@@ -68,6 +71,19 @@ fn main() {
         )
         .expect("header should not yet exist");
     }
+
+    if let Some(current) = env::var_os("CARGO_TARGET_DIR") {
+        println!("current CARGO_TARGET_DIR = {:?}", current);
+    }
+
+    unsafe {
+        env::set_var("CARGO_TARGET_DIR", out_dir);
+    }
+
+    println!(
+        "new CARGO_TARGET_DIR = {:?}",
+        env::var_os("CARGO_TARGET_DIR").expect("we just set it")
+    );
 
     let local_src_dir = Path::new("src");
     cxx_build::bridge(local_src_dir.join("lib.rs"))
