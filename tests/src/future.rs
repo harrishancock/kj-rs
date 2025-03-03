@@ -1,3 +1,5 @@
+// This file contains boilerplate which must occur once per crate, rather than once per type.
+
 use std::future::Future;
 use std::pin::Pin;
 use std::task::Context;

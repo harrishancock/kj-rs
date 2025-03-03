@@ -1,27 +1,24 @@
 mod awaiter;
 pub use awaiter::GuardedRustPromiseAwaiter;
 use awaiter::OptionWaker;
+pub use awaiter::PromiseAwaiter;
 use awaiter::PtrGuardedRustPromiseAwaiter;
 use awaiter::WakerRef;
-
-mod future;
-pub use future::BoxFuture;
-use future::PtrBoxFuture;
 
 mod lazy_pin_init;
 
 mod promise;
 pub use promise::OwnPromiseNode;
-pub use promise::Promise;
-use promise::PtrOwnPromiseNode;
-use promise::PtrPromise;
+pub use promise::PtrOwnPromiseNode;
 
 mod waker;
 
-type CxxResult<T> = std::result::Result<T, cxx::Exception>;
+pub type CxxResult<T> = std::result::Result<T, cxx::Exception>;
 
-type Result<T> = std::io::Result<T>;
-type Error = std::io::Error;
+pub type Result<T> = std::io::Result<T>;
+pub type Error = std::io::Error;
+
+pub use crate::ffi::KjWaker;
 
 #[cxx::bridge(namespace = "kj_rs")]
 mod ffi {

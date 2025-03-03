@@ -59,7 +59,7 @@ impl Drop for GuardedRustPromiseAwaiter {
 //
 // https://docs.rs/cxx/latest/cxx/trait.ExternType.html#integrating-with-bindgen-generated-types
 unsafe impl ExternType for GuardedRustPromiseAwaiter {
-    type Id = cxx::type_id!("kj_rs::GuardedRustPromiseAwaiter");
+    type Id = cxx::type_id!("::kj_rs::GuardedRustPromiseAwaiter");
     type Kind = cxx::kind::Opaque;
 }
 
@@ -68,56 +68,16 @@ pub struct PtrGuardedRustPromiseAwaiter(*mut GuardedRustPromiseAwaiter);
 
 // Safety: Raw pointers are the same size in both languages.
 unsafe impl ExternType for PtrGuardedRustPromiseAwaiter {
-    type Id = cxx::type_id!("kj_rs::PtrGuardedRustPromiseAwaiter");
+    type Id = cxx::type_id!("::kj_rs::PtrGuardedRustPromiseAwaiter");
     type Kind = cxx::kind::Trivial;
 }
 
 // =======================================================================================
 // Await syntax for OwnPromiseNode
 
-use std::marker::PhantomData;
-
-use crate::promise::PromiseTarget;
 use crate::OwnPromiseNode;
-use crate::Promise;
 
-impl<T: PromiseTarget> IntoFuture for Promise<T> {
-    type IntoFuture = PromiseFuture<T>;
-    type Output = <PromiseFuture<T> as Future>::Output;
-
-    fn into_future(self) -> Self::IntoFuture {
-        PromiseFuture::new(self)
-    }
-}
-
-pub struct PromiseFuture<T: PromiseTarget> {
-    awaiter: PromiseAwaiter,
-    _marker: PhantomData<T>,
-}
-
-impl<T: PromiseTarget> PromiseFuture<T> {
-    fn new(promise: Promise<T>) -> Self {
-        PromiseFuture {
-            awaiter: PromiseAwaiter::new(T::into_own_promise_node(promise)),
-            _marker: Default::default(),
-        }
-    }
-}
-
-impl<T: PromiseTarget> Future for PromiseFuture<T> {
-    type Output = CxxResult<T>;
-    fn poll(self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {
-        // TODO(now): Safety comment.
-        let mut awaiter = unsafe { self.map_unchecked_mut(|s| &mut s.awaiter) };
-        if awaiter.as_mut().poll(cx) {
-            Poll::Ready(T::unwrap(awaiter.get_awaiter().take_own_promise_node()))
-        } else {
-            Poll::Pending
-        }
-    }
-}
-
-struct PromiseAwaiter {
+pub struct PromiseAwaiter {
     node: Option<OwnPromiseNode>,
     awaiter: LazyPinInit<GuardedRustPromiseAwaiter>,
     // Safety: `option_waker` must be declared after `awaiter`, because `awaiter` contains a reference
@@ -126,7 +86,7 @@ struct PromiseAwaiter {
 }
 
 impl PromiseAwaiter {
-    fn new(node: OwnPromiseNode) -> Self {
+    pub fn new(node: OwnPromiseNode) -> Self {
         PromiseAwaiter {
             node: Some(node),
             awaiter: LazyPinInit::uninit(),
@@ -134,7 +94,7 @@ impl PromiseAwaiter {
         }
     }
 
-    fn get_awaiter(mut self: Pin<&mut Self>) -> Pin<&mut GuardedRustPromiseAwaiter> {
+    pub fn get_awaiter(mut self: Pin<&mut Self>) -> Pin<&mut GuardedRustPromiseAwaiter> {
         // On our first invocation, `node` will be Some, and `get_awaiter` will forward its
         // contents into GuardedRustPromiseAwaiter's constructor. On all subsequent invocations, `node`
         // will be None and the constructor will not run.
@@ -176,7 +136,7 @@ impl PromiseAwaiter {
         })
     }
 
-    fn poll(mut self: Pin<&mut Self>, cx: &mut Context) -> bool {
+    pub fn poll(mut self: Pin<&mut Self>, cx: &mut Context) -> bool {
         let maybe_kj_waker = try_into_kj_waker_ptr(cx.waker());
         let awaiter = self.as_mut().get_awaiter();
         // TODO(now): Safety comment.
