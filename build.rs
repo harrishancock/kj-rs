@@ -39,7 +39,6 @@ fn main() {
                     .expect("LIBKJ_INCLUDE_PATH must be canonicalizable")
                     .into_boxed_path(),
             ) as &Path;
-            println!("new path {:?}", p);
             p
         })
         .collect();
