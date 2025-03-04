@@ -79,14 +79,14 @@ fn main() {
         .expect("header should not yet exist");
     }
 
-    unsafe {
-        env::set_var("CARGO_TARGET_DIR", out_dir);
-    }
+    // unsafe {
+    //     env::set_var("CARGO_TARGET_DIR", out_dir);
+    // }
 
-    println!(
-        "set CARGO_TARGET_DIR = {:?}",
-        env::var_os("CARGO_TARGET_DIR").expect("we just set it")
-    );
+    // println!(
+    //     "set CARGO_TARGET_DIR = {:?}",
+    //     env::var_os("CARGO_TARGET_DIR").expect("we just set it")
+    // );
 
     let local_src_dir = Path::new("src");
     cxx_build::bridge(local_src_dir.join("lib.rs"))
