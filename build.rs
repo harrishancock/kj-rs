@@ -100,7 +100,7 @@ fn main() {
     // generally seems to have been unwise:
     // - https://github.com/dtolnay/cxx/issues/754
     // - https://github.com/dtolnay/cxx/issues/1004
-    let symlink_to_kill = out_dir.join("cxxbridge").join("crate").join("/kj-rs");
+    let symlink_to_kill = out_dir.join("cxxbridge").join("crate").join("kj-rs");
     assert!(symlink_to_kill.is_symlink());
     fs::remove_file(&symlink_to_kill).expect("we should be able to remove it");
 }
