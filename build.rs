@@ -30,12 +30,8 @@ fn main() {
         env::var("LIBKJ_INCLUDE_PATH").expect("LIBKJ_INCLUDE_PATH must be set");
     let libkj_static_path = env::var("LIBKJ_STATIC_PATH").expect("LIBKJ_STATIC_PATH must be set");
 
-    let libkj_include_path: Vec<&Path> = libkj_include_path
-        .split(':')
-        .map(|p| Path::new(p))
-        .collect();
-    let libkj_static_path: Vec<&Path> =
-        libkj_static_path.split(':').map(|p| Path::new(p)).collect();
+    let libkj_include_path: Vec<&Path> = libkj_include_path.split(':').map(Path::new).collect();
+    let libkj_static_path: Vec<&Path> = libkj_static_path.split(':').map(Path::new).collect();
 
     println!("cargo:rerun-if-env-changed=LIBKJ_INCLUDE_PATH");
     println!("cargo:rerun-if-env-changed=LIBKJ_STATIC_PATH");
@@ -49,12 +45,26 @@ fn main() {
     println!("cargo:rustc-link-lib=static=kj");
     println!("cargo:rustc-link-lib=static=kj-async");
 
+    for file in HEADERS {
+        println!("cargo:rerun-if-changed=include/{}", file);
+    }
+    for file in SOURCES {
+        println!("cargo:rerun-if-changed=src/{}", file);
+    }
+
     // We publicly depend on KJ.
     CFG.exported_header_dirs.extend(libkj_include_path);
 
-    // We export our own headers so that they are available with `#include <kj-rs/foo.h>`.
+    // cxxbridge leaves a symlink at $OUT_DIR/cxxbridge/crate/kj-rs pointing to our
+    // CARGO_MANIFEST_DIR. The intent is to provide access to our crate's headers under the prefix
+    // `kj-rs/`.`
+    // - https://github.com/dtolnay/cxx/issues/754
+    // - https://github.com/dtolnay/cxx/issues/1004
     let out_dir = env::var("OUT_DIR").expect("cargo guarantees OUT_DIR is set");
-    let out_include_dir = Path::new(&out_dir).join("include");
+    let out_dir = Path::new(&out_dir);
+
+    // We export our own headers so that they are available with `#include <kj-rs/foo.h>`.
+    let out_include_dir = out_dir.join("include");
     CFG.exported_header_dirs.push(&out_include_dir);
 
     let out_include_kj_rs_dir = out_include_dir.join("kj-rs");
@@ -71,9 +81,21 @@ fn main() {
 
     let local_src_dir = Path::new("src");
     cxx_build::bridge(local_src_dir.join("lib.rs"))
-        .files(SOURCES.into_iter().map(|s| local_src_dir.join(s)))
         .cpp(true)
+        .files(SOURCES.into_iter().map(|s| local_src_dir.join(s)))
         .cpp_set_stdlib("c++")
         .std("c++23")
         .compile("kj-rs");
+
+    // The symlink-to-directory at $OUT_DIR/cxxbridge/crate/kj-rs confuses rules_rust's
+    // recently-added symlink fixup behavior, which ends up trying to copy a directory as a file.
+    // - https://github.com/bazelbuild/rules_rust/pull/3067
+    //
+    // We'll deal with this by just removing the symlink. The only thing dependents need are our
+    // headers, which we've already made available at $OUT_DIR/include/kj-rs/.
+
+    let out_cxxbridge_crate_dir = out_dir.join("cxxbridge").join("crate");
+    let out_kj_rs_dir = out_cxxbridge_crate_dir.join("kj-rs");
+    assert!(out_kj_rs_dir.is_symlink());
+    fs::remove_file(&out_kj_rs_dir).expect("cxxbridge/crate/kj-rs should be removable");
 }

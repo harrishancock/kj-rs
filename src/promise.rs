@@ -35,7 +35,7 @@ impl Drop for OwnPromiseNode {
 //
 // https://docs.rs/cxx/latest/cxx/trait.ExternType.html#integrating-with-bindgen-generated-types
 unsafe impl ExternType for OwnPromiseNode {
-    type Id = cxx::type_id!("kj_rs::OwnPromiseNode");
+    type Id = cxx::type_id!("::kj_rs::OwnPromiseNode");
     type Kind = cxx::kind::Trivial;
 }
 
@@ -44,34 +44,6 @@ pub struct PtrOwnPromiseNode(*mut OwnPromiseNode);
 
 // Safety: Raw pointers are the same size in both languages.
 unsafe impl ExternType for PtrOwnPromiseNode {
-    type Id = cxx::type_id!("kj_rs::PtrOwnPromiseNode");
+    type Id = cxx::type_id!("::kj_rs::PtrOwnPromiseNode");
     type Kind = cxx::kind::Trivial;
 }
-
-// ---------------------------------------------------------
-
-pub trait PromiseTarget: Sized {
-    fn into_own_promise_node(this: Promise<Self>) -> OwnPromiseNode;
-    unsafe fn drop_in_place(this: PtrPromise<Self>);
-    fn unwrap(node: OwnPromiseNode) -> CxxResult<Self>;
-}
-
-use std::marker::PhantomData;
-
-#[allow(dead_code)]
-pub struct Promise<T: PromiseTarget>(*const (), PhantomData<T>);
-
-// TODO(now): `where T: Send`? Do I need to do this for Future too?
-unsafe impl<T: PromiseTarget> Send for Promise<T> {}
-
-impl<T: PromiseTarget> Drop for Promise<T> {
-    fn drop(&mut self) {
-        // TODO(now): Safety comment.
-        unsafe {
-            T::drop_in_place(PtrPromise(self));
-        }
-    }
-}
-
-#[repr(transparent)]
-pub struct PtrPromise<T: PromiseTarget>(*mut Promise<T>);

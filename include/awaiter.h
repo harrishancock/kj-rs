@@ -130,9 +130,9 @@ void guarded_rust_promise_awaiter_drop_in_place(PtrGuardedRustPromiseAwaiter);
 // =======================================================================================
 // FuturePollEvent
 
-// Base class for `BoxFutureAwaiter<T>`. `BoxFutureAwaiter<T>` implements the type-specific
-// `Event::fire()` override which actually polls the `BoxFuture<T>`; this class implements all other
-// base class virtual functions.
+// Base class for `FutureAwaiter<F>`. `FutureAwaiter<F>` implements the type-specific
+// `Event::fire()` override which actually polls the Future; this class implements all other base
+// class virtual functions.
 //
 // A FuturePollEvent contains an optional ArcWakerPromiseAwaiter and a list of zero or more
 // RustPromiseAwaiters. These "sub-Promise awaiters" all wrap a KJ Promise of some sort, and arrange
@@ -165,7 +165,7 @@ protected:
   // optimized Promise `.await`s. Additionally, PollScope's destructor arranges to await any
   // ArcWaker promise which was lazily created.
   //
-  // Used by BoxFutureAwaiter<T>, our derived class.
+  // Used by FutureAwaiter<T>, our derived class.
   class PollScope;
 
 private:
@@ -199,26 +199,26 @@ private:
 };
 
 // =======================================================================================
-// BoxFutureAwaiter, LazyBoxFutureAwaiter, and operator co_await implementations
+// FutureAwaiter, LazyFutureAwaiter, and operator co_await implementations
 
-// BoxFutureAwaiter<T> is a Future poll() Event, and is the inner implementation of our co_await
-// syntax. It wraps a BoxFuture<T> and captures a reference to its enclosing KJ coroutine, arranging
-// to continuously call `BoxFuture<T>::poll()` on the KJ event loop until the Future produces a
+// FutureAwaiter<T> is a Future poll() Event, and is the inner implementation of our co_await
+// syntax. It wraps a Future and captures a reference to its enclosing KJ coroutine, arranging
+// to continuously call `Future::poll()` on the KJ event loop until the Future produces a
 // result, after which it arms the enclosing KJ coroutine's Event.
-template <typename T>
-class BoxFutureAwaiter final: public FuturePollEvent {
+template <Future F>
+class FutureAwaiter final: public FuturePollEvent {
 public:
-  BoxFutureAwaiter(
+  FutureAwaiter(
       kj::_::CoroutineBase& coroutine,
-      BoxFuture<T> future,
+      F future,
       kj::SourceLocation location = {})
       : FuturePollEvent(location),
         coroutine(coroutine),
         future(kj::mv(future)) {}
-  ~BoxFutureAwaiter() noexcept(false) {
+  ~FutureAwaiter() noexcept(false) {
     coroutine.clearPromiseNodeForTrace();
   }
-  KJ_DISALLOW_COPY_AND_MOVE(BoxFutureAwaiter);
+  KJ_DISALLOW_COPY_AND_MOVE(FutureAwaiter);
 
   // Poll the wrapped Future, returning false if we should _not_ suspend, true if we should suspend.
   bool awaitSuspendImpl() {
@@ -242,7 +242,7 @@ public:
     return true;
   }
 
-  RemoveFallible<T> awaitResumeImpl() {
+  auto awaitResumeImpl() {
     coroutine.clearPromiseNodeForTrace();
     return kj::_::convertToReturn(kj::mv(result));
   }
@@ -268,50 +268,42 @@ private:
   // HACK: FuturePollEvent implements the PromiseNode interface to integrate with the Coroutine
   // class' current tracing implementation.
   OwnPromiseNode promiseNodeForTrace { this };
-  kj::_::ExceptionOr<kj::_::FixVoid<RemoveFallible<T>>> result;
-  BoxFuture<T> future;
+  typename F::ExceptionOrValue result;
+  F future;
 };
 
-// LazyBoxFutureAwaiter<T> is the outer implementation of our co_await syntax, providing the
+// LazyFutureAwaiter<T> is the outer implementation of our co_await syntax, providing the
 // await_ready(), await_suspend(), await_resume() facade expected by the compiler.
 //
-// LazyBoxFutureAwaiter is a type with two stages. At first, it merely wraps a BoxFuture<T>. Once
-// its await_suspend() function is called, it transitions to wrap a BoxFutureAwaiter<T>, our inner
+// LazyFutureAwaiter is a type with two stages. At first, it merely wraps a Future. Once
+// its await_suspend() function is called, it transitions to wrap a FutureAwaiter<T>, our inner
 // awaiter implementation. We do this because we don't get a reference to our enclosing
 // coroutine until await_suspend() is called, and our awaiter implementation is greatly simplified
 // if we can avoid using a Maybe. So, we defer the real awaiter instantiation to await_suspend().
-template <typename T>
-class LazyBoxFutureAwaiter {
+template <Future F>
+class LazyFutureAwaiter {
 public:
-  LazyBoxFutureAwaiter(BoxFuture<T>&& future): impl(kj::mv(future)) {}
+  LazyFutureAwaiter(F&& future): impl(kj::mv(future)) {}
 
   // Always return false, so our await_suspend() is guaranteed to be called.
   bool await_ready() const { return false; }
 
-  // Initialize our wrapped Awaiter and forward to `BoxFutureAwaiter<T>::awaitSuspendImpl()`.
+  // Initialize our wrapped Awaiter and forward to `FutureAwaiter<T>::awaitSuspendImpl()`.
   template <typename U> requires (kj::canConvert<U&, kj::_::CoroutineBase&>())
   bool await_suspend(kj::_::stdcoro::coroutine_handle<U> handle) {
-    auto future = kj::mv(KJ_ASSERT_NONNULL(impl.template tryGet<BoxFuture<T>>()));
-    return impl.template init<BoxFutureAwaiter<T>>(handle.promise(), kj::mv(future))
+    auto future = kj::mv(KJ_ASSERT_NONNULL(impl.template tryGet<F>()));
+    return impl.template init<FutureAwaiter<F>>(handle.promise(), kj::mv(future))
         .awaitSuspendImpl();
   }
 
-  // Forward to our wrapped `BoxFutureAwaiter<T>::awaitResumeImpl()`.
-  RemoveFallible<T> await_resume() {
-    return KJ_ASSERT_NONNULL(impl.template tryGet<BoxFutureAwaiter<T>>()).awaitResumeImpl();
+  // Forward to our wrapped `FutureAwaiter<T>::awaitResumeImpl()`.
+  auto await_resume() {
+    return KJ_ASSERT_NONNULL(impl.template tryGet<FutureAwaiter<F>>()).awaitResumeImpl();
   }
 
-private:
-  kj::OneOf<BoxFuture<T>, BoxFutureAwaiter<T>> impl;
-};
 
-template <typename T>
-LazyBoxFutureAwaiter<T> operator co_await(BoxFuture<T> future) {
-  return kj::mv(future);
-}
-template <typename T>
-LazyBoxFutureAwaiter<T> operator co_await(BoxFuture<T>& future) {
-  return kj::mv(future);
-}
+private:
+  kj::OneOf<F, FutureAwaiter<F>> impl;
+};
 
 }  // namespace kj_rs
