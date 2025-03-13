@@ -65,8 +65,12 @@ crates_vendor(
     mode = "remote",
     packages = {
         "kj-rs": crate.spec(
-            branch = "dev",
             git = "https://github.com/harrishancock/kj-rs",
+            # When iterating on the build system (e.g. Cargo.toml, build.rs), you'll need to push
+            # your changes to a development branch, set this `branch` property to the name of your
+            # branch, then repin crates with `bazel run //:crates_vendor -- --repin`. This will
+            # regenerate the crates_vendor/BUILD.kj-rs-x.y.z.bazel file.
+            # branch = "yourdevbranchhere",
         ),
         "cxx": crate.spec(
             version = "1.0",

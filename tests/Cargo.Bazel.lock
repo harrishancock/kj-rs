@@ -130,7 +130,7 @@ checksum = "a0d2fde1f7b3d48b8395d5f2de76c18a528bd6a9cdde438df747bfcba3e05d6f"
 [[package]]
 name = "kj-rs"
 version = "0.1.1"
-source = "git+https://github.com/harrishancock/kj-rs?branch=dev"
+source = "git+https://github.com/harrishancock/kj-rs#49f7f163c571cf4920fedf07fd95f856cc3d3913"
 dependencies = [
  "cxx",
  "cxx-build",
