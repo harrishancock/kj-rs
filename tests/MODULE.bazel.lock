@@ -162,7 +162,7 @@
   "moduleExtensions": {
     "//:build/vendor_extensions.bzl%vendored": {
       "general": {
-        "bzlTransitiveDigest": "mCH8NufJVdHfgLFgBLcw1S0Y11/tr9657QC7ikASA8M=",
+        "bzlTransitiveDigest": "EtTI8PThN7cerhvYyRgRN5ps2e2lQNVSiYNsX7dsX6I=",
         "usagesDigest": "PNPzK8cO1ZedWDZwfY7jCl2jW/EHXYK5IpHqdo9nX7c=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -262,7 +262,7 @@
           "crates_vendor__kj-rs-0.1.1": {
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:git.bzl%git_repository",
             "attributes": {
-              "branch": "dev",
+              "commit": "49f7f163c571cf4920fedf07fd95f856cc3d3913",
               "init_submodules": true,
               "remote": "https://github.com/harrishancock/kj-rs",
               "build_file": "@@//crates_vendor:BUILD.kj-rs-0.1.1.bazel"
